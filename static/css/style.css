@@ -1,0 +1,123 @@
+.calendar-cell {
+    aspect-ratio: 1;
+}
+
+.holiday {
+    background-color: #fee2e2;
+}
+
+.bg-red-100 {
+    background-color: #fee2e2;
+}
+
+.employee-name {
+    font-size: 0.875rem;
+    color: #374151;
+    margin-top: 0.25rem;
+}
+
+/* 按鈕基本樣式 */
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+/* 主要按鈕樣式 */
+.btn-primary {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #2563eb;
+}
+
+/* 危險按鈕樣式 */
+.btn-danger {
+    background-color: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #dc2626;
+}
+
+/* 檔案上傳按鈕樣式 */
+.file-upload {
+    position: relative;
+    display: inline-block;
+}
+
+.file-upload input[type="file"] {
+    display: none;  /* 隱藏原始的檔案輸入框 */
+}
+
+.file-upload label {
+    background-color: #10b981;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: inline-block;
+    font-weight: 500;
+}
+
+.file-upload label:hover {
+    background-color: #059669;
+}
+
+/* 日曆格子樣式 */
+.calendar-day {
+    padding: 0.25rem;
+    text-align: center;
+    font-size: 0.875rem;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.calendar-day:hover {
+    background-color: #f3f4f6;
+}
+
+.calendar-day.holiday {
+    background-color: #fee2e2;
+}
+
+/* 工具列樣式 */
+.toolbar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+/* 年份輸入框樣式 */
+.year-input {
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.25rem;
+    width: 6rem;
+}
+
+/* 提示訊息樣式 */
+.alert {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+}
+
+.alert-success {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.alert-error {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+  

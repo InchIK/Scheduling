@@ -1,0 +1,13 @@
+.day {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.day:hover {
+  background-color: #f0f0f0;
+  border-radius: 50%;
+} 

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <h1 class="text-2xl font-bold mb-6">排班表</h1>
+    
+    <div class="grid grid-cols-7 gap-1">
+        {% for day in ['日', '一', '二', '三', '四', '五', '六'] %}
+        <div class="text-center font-bold p-2 bg-gray-100">
+            {{ day }}
+        </div>
+        {% endfor %}
+        
+        {% for week in calendar %}
+        {% for day in week %}
+        <div class="border p-2 min-h-[80px] {% if day == 0 %}bg-gray-50{% endif %}">
+            {% if day != 0 %}
+            <div class="text-right">{{ day }}</div>
+            {% for holiday in holidays %}
+            {% if holiday.date.day == day %}
+            <div class="mt-1 text-sm text-red-600">
+                {% for employee in employees %}
+                {% if employee.id == holiday.employee_id %}
+                {{ employee.name }}
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

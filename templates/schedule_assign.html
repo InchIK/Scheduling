@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <h1 class="text-2xl font-bold mb-6">員工管理</h1>
+    
+    <!-- 員工管理區塊 -->
+    <div class="mb-8">
+        <h2 class="text-xl font-bold mb-4">新增員工</h2>
+        <form id="addEmployeeForm" class="space-y-4 mb-4">
+            <div class="flex gap-4">
+                <input 
+                    type="text" 
+                    id="employeeName"
+                    name="name"
+                    class="flex-1 border rounded px-3 py-2"
+                    placeholder="輸入員工姓名"
+                    required
+                >
+                <input 
+                    type="email" 
+                    id="employeeEmail"
+                    name="email"
+                    class="flex-1 border rounded px-3 py-2"
+                    placeholder="輸入員工Email"
+                    required
+                >
+            </div>
+            <button 
+                type="submit"
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+                新增
+            </button>
+        </form>
+        
+        <div id="employeeList" class="space-y-2">
+            {% for employee in employees %}
+            <div class="flex justify-between items-center border rounded p-3">
+                <div class="flex items-center gap-4">
+                    <div class="w-6 h-6 rounded-full employee-color" data-color="{{ employee.color }}"></div>
+                    <span>{{ employee.name }}</span>
+                    <span class="text-gray-500">{{ employee.email }}</span>
+                </div>
+                <button 
+                    onclick="deleteEmployee('{{ employee.id }}')"
+                    class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                >
+                    刪除
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('addEmployeeForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const employeeData = {
+        name: formData.get('name'),
+        email: formData.get('email')
+    };
+    
+    try {
+        const response = await fetch('/api/employees', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(employeeData)
+        });
+        
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            const error = await response.json();
+            alert('新增失敗: ' + (error.detail || '未知錯誤'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('新增失敗');
+    }
+});
+
+async function deleteEmployee(id) {
+    if (!confirm('確定要刪除此員工嗎？')) return;
+    
+    try {
+        const response = await fetch(`/api/employees/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// 在文檔載入完成後設定員工顏色
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.employee-color').forEach(element => {
+        const color = element.getAttribute('data-color');
+        if (color) {
+            element.style.backgroundColor = color;
+        }
+    });
+});
+</script>
+{% endblock %} 

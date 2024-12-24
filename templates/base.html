@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排班系統</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', path='/css/style.css') }}" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow mb-4">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <a href="/" class="text-xl font-bold">排班系統</a>
+                <div>
+                    <a href="/" class="px-4 py-2">排班表</a>
+                    <a href="/schedule/assign" class="px-4 py-2">員工管理</a>
+                    <a href="/admin" class="px-4 py-2">假日管理</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <main class="container mx-auto px-4">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+</body>
+</html> 
