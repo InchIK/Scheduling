@@ -151,10 +151,26 @@ function generateMonthCalendar(year, month, holidays) {
             }
         });
 
-        // 檢查是否為假日
+        // 檢查是否為假日並設置對應員工的顏色
         const holiday = holidays.find(h => h.date === dateStr);
         if (holiday) {
-            dateCell.classList.add('bg-red-100');
+            if (holiday.employee_id && employeeColors[holiday.employee_id]) {
+                // 使用員工的顏色
+                dateCell.style.backgroundColor = employeeColors[holiday.employee_id].color;
+                // 根據背景色調整文字顏色
+                const color = employeeColors[holiday.employee_id].color;
+                const isLight = (color) => {
+                    const hex = color.replace('#', '');
+                    const r = parseInt(hex.substr(0, 2), 16);
+                    const g = parseInt(hex.substr(2, 2), 16);
+                    const b = parseInt(hex.substr(4, 2), 16);
+                    return ((r * 299 + g * 587 + b * 114) / 1000) > 128;
+                };
+                dateCell.style.color = isLight(color) ? '#000000' : '#FFFFFF';
+            } else {
+                // 未分配員工的假日使用紅色背景
+                dateCell.classList.add('bg-red-100');
+            }
         }
 
         calendarDiv.appendChild(dateCell);
@@ -239,12 +255,18 @@ async function fetchHolidays(year) {
                 };
             });
             
+            // 確保 holidays 中包含了員工 ID
+            const holidaysWithEmployees = holidays.map(holiday => ({
+                ...holiday,
+                employee_id: holiday.employee_id
+            }));
+            
             // 重新生成所有月份的日曆
             for (let month = 1; month <= 12; month++) {
-                generateMonthCalendar(year, month, holidays);
+                generateMonthCalendar(year, month, holidaysWithEmployees);
             }
 
-            // 查是否有分配結果並顯示
+            // 更新分配結果顯示
             if (stats && stats.results && stats.results.length > 0) {
                 const resultDiv = document.getElementById('assignmentResult');
                 resultDiv.classList.remove('hidden');
@@ -268,7 +290,6 @@ async function fetchHolidays(year) {
                     </div>
                 `).join('');
             } else {
-                // 如果沒有分配結果，隱藏結果區域
                 const resultDiv = document.getElementById('assignmentResult');
                 resultDiv.classList.add('hidden');
             }
@@ -406,35 +427,54 @@ async function autoAssignHolidays() {
         
         if (response.ok) {
             const result = await response.json();
-            const data = result.data;
             
-            // 顯示結果區域
-            const resultDiv = document.getElementById('assignmentResult');
-            resultDiv.classList.remove('hidden');
+            // 重新獲取更新後的假日資料
+            const holidaysResponse = await fetch(`/api/holidays/${year}`);
+            const employeesResponse = await fetch('/api/employees');
             
-            // 顯示分配順序
-            const orderDiv = document.getElementById('assignmentOrder');
-            orderDiv.textContent = data.order;
+            if (holidaysResponse.ok && employeesResponse.ok) {
+                const holidays = await holidaysResponse.json();
+                const employees = await employeesResponse.json();
+                
+                // 更新員工顏色映射
+                employeeColors = {};
+                employees.forEach(emp => {
+                    employeeColors[emp.id] = {
+                        color: emp.color,
+                        name: emp.name
+                    };
+                });
+                
+                // 重新生成所有月份的日曆
+                for (let month = 1; month <= 12; month++) {
+                    generateMonthCalendar(year, month, holidays);
+                }
+            }
             
-            // 顯示分配詳情
-            const detailsDiv = document.getElementById('assignmentDetails');
-            detailsDiv.innerHTML = data.results.map(emp => `
-                <div class="flex items-center text-xs p-1 bg-gray-50 rounded">
-                    <div class="w-3 h-3 rounded-full flex-shrink-0 mr-1" style="background-color: ${emp.color}"></div>
-                    <div class="min-w-0 flex-1">
-                        <div class="flex items-center justify-between">
-                            <span class="font-bold">${emp.name}</span>
-                            <span class="bg-gray-100 px-1 rounded text-[10px]">權重:${emp.weight}</span>
-                        </div>
-                        <div class="text-[10px] text-gray-600 truncate">
-                            ${emp.total_days}天(連:${emp.continuous_days},單:${emp.single_days})
+            // 顯示分配結果
+            if (result.data) {
+                const resultDiv = document.getElementById('assignmentResult');
+                resultDiv.classList.remove('hidden');
+                
+                const orderDiv = document.getElementById('assignmentOrder');
+                orderDiv.textContent = result.data.order;
+                
+                const detailsDiv = document.getElementById('assignmentDetails');
+                detailsDiv.innerHTML = result.data.results.map(emp => `
+                    <div class="flex items-center text-xs p-1 bg-gray-50 rounded">
+                        <div class="w-3 h-3 rounded-full flex-shrink-0 mr-1" style="background-color: ${emp.color}"></div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold">${emp.name}</span>
+                                <span class="bg-gray-100 px-1 rounded text-[10px]">權重:${emp.weight}</span>
+                            </div>
+                            <div class="text-[10px] text-gray-600 truncate">
+                                ${emp.total_days}天(連:${emp.continuous_days},單:${emp.single_days})
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
-            
-            // 重新載入日曆
-            await fetchHolidays(year);
+                `).join('');
+            }
         } else {
             const error = await response.json();
             alert('分配失敗: ' + error.detail);
@@ -503,7 +543,7 @@ function showEmployeeSelector(date, employees) {
     });
 }
 
-// 添��更新分配結果的函數
+// 添加更新分配結果的函數
 async function updateAssignmentResults(year) {
     try {
         const response = await fetch(`/api/holidays/assignment-stats?year=${year}`);
