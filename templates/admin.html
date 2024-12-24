@@ -104,6 +104,25 @@
 </div>
 
 <script>
+async function loadYear() {
+    const year = parseInt(document.getElementById('yearInput').value);
+    if (year >= 1900 && year <= 2100) {
+        try {
+            // 先生成空白日曆
+            for (let month = 1; month <= 12; month++) {
+                generateMonthCalendar(year, month, []);
+            }
+            // 再獲取假日資料
+            await fetchHolidays(year);
+        } catch (error) {
+            console.error('Error loading year:', error);
+            alert('載入年份失敗');
+        }
+    } else {
+        alert('請輸入有效年份（1900-2100）');
+    }
+}
+
 function generateMonthCalendar(year, month, holidays) {
     const calendarDiv = document.getElementById(`calendar-${month}`);
     if (!calendarDiv) return;
@@ -129,7 +148,7 @@ function generateMonthCalendar(year, month, holidays) {
     // 添加空白格子
     for (let i = 0; i < startingDay; i++) {
         const emptyCell = document.createElement('div');
-        emptyCell.className = 'text-center text-sm p-1 bg-gray-50';
+        emptyCell.className = 'day text-center text-sm p-1 bg-gray-50';
         calendarDiv.appendChild(emptyCell);
     }
 
@@ -138,8 +157,9 @@ function generateMonthCalendar(year, month, holidays) {
         const dateCell = document.createElement('div');
         const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         
-        dateCell.className = 'text-center text-sm p-1 border cursor-pointer hover:bg-gray-50';
+        dateCell.className = 'day text-center text-sm p-1 border cursor-pointer hover:bg-gray-50';
         dateCell.textContent = day;
+        dateCell.setAttribute('data-date', dateStr);
 
         // 添加點擊事件
         dateCell.addEventListener('click', async () => {
@@ -155,9 +175,7 @@ function generateMonthCalendar(year, month, holidays) {
         const holiday = holidays.find(h => h.date === dateStr);
         if (holiday) {
             if (holiday.employee_id && employeeColors[holiday.employee_id]) {
-                // 使用員工的顏色
                 dateCell.style.backgroundColor = employeeColors[holiday.employee_id].color;
-                // 根據背景色調整文字顏色
                 const color = employeeColors[holiday.employee_id].color;
                 const isLight = (color) => {
                     const hex = color.replace('#', '');
@@ -168,7 +186,6 @@ function generateMonthCalendar(year, month, holidays) {
                 };
                 dateCell.style.color = isLight(color) ? '#000000' : '#FFFFFF';
             } else {
-                // 未分配員工的假日使用紅色背景
                 dateCell.classList.add('bg-red-100');
             }
         }
@@ -301,43 +318,12 @@ async function fetchHolidays(year) {
     }
 }
 
-async function loadYear() {
-    const year = parseInt(document.getElementById('yearInput').value);
-    if (year >= 1900 && year <= 2100) {
-        try {
-            const response = await fetch(`/api/holidays/${year}`);
-            if (response.ok) {
-                const holidays = await response.json();
-                for (let month = 1; month <= 12; month++) {
-                    generateMonthCalendar(year, month, holidays);
-                }
-            }
-        } catch (error) {
-            console.error('Error loading year:', error);
-            alert('載入年份失敗');
-        }
-    } else {
-        alert('請輸入有效年份（1900-2100）');
-    }
-}
-
 // 修改初始載入
 document.addEventListener('DOMContentLoaded', async () => {
     const year = parseInt(document.getElementById('yearInput').value);
     try {
-        // 初始化 employeeColors 物件
-        employeeColors = {};
-        
-        // 獲取假日資料
-        const response = await fetch(`/api/holidays/${year}`);
-        if (response.ok) {
-            const holidays = await response.json();
-            
-            // 為每個月生成日曆
-            for (let month = 1; month <= 12; month++) {
-                generateMonthCalendar(year, month, holidays);
-            }
-        }
+        // 使用 fetchHolidays 來完整初始化
+        await fetchHolidays(year);
     } catch (error) {
         console.error('Error during initial load:', error);
     }
